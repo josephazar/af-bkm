@@ -1,0 +1,30 @@
+# Python / virtual environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Local-only working directories and generated artefacts (not part of the code release)
+paper/
+taxonomy/
+results/
+*.tex
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.toc
+
+# Datasets (large / externally sourced; fetched or regenerated)
+data/raw/
+data/processed/

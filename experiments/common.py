@@ -29,7 +29,7 @@ PALETTE = {
     "E2 robust-agg": "#1f77b4",
     "AF-BKM (E1+E2)": "#2ca02c",
 }
-DATASET_TITLE = {"nsl-kdd": "NSL-KDD", "unsw-nb15": "UNSW-NB15"}
+DATASET_TITLE = {"nsl-kdd": "NSL-KDD", "unsw-nb15": "UNSW-NB15", "n-baiot": "N-BaIoT"}
 
 
 def savefig(fig, name):
@@ -58,9 +58,14 @@ def mean_std_over_seeds(pe):
     return g.merge(merge_ep, on=keys)
 
 
+PM = "\u00b1"
+DELTA = "\u0394"
+ARROW = "\u2192"
+
 _TEX_REPL = {"\\": r"\textbackslash{}", "_": r"\_", "%": r"\%", "&": r"\&",
-             "#": r"\#", "±": r"$\pm$", "Δ": r"$\Delta$", "→": r"$\rightarrow$",
-             "≥": r"$\geq$", "≤": r"$\leq$", "α": r"$\alpha$"}
+             "#": r"\#", PM: r"$\pm$", DELTA: r"$\Delta$", ARROW: r"$\rightarrow$",
+             "\u2265": r"$\geq$", "\u2264": r"$\leq$", "\u03b1": r"$\alpha$",
+             "\u2013": "--", "\u2014": "---", "\u2011": "-", "\u2026": "..."}
 
 
 def _tex(s):

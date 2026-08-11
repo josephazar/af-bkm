@@ -1,7 +1,7 @@
 """Experiment 3 - the Mahalanobis Baseline-K-means core vs. standard semi-supervised
 novelty detectors (OCSVM/IsolationForest/LOF/KDE/KNN), trained on benign data and
 evaluated on a held-out stream. Also records fit/predict time (lightweight claim).
-Single-node (non-federated) comparison, mirroring the original papers.
+Single-node (non-federated) comparison matching the published evaluation protocol.
 """
 import time
 import numpy as np
@@ -19,7 +19,7 @@ DCOL = {"Bkmeans-Mahalanobis": "#2ca02c", "OCSVM": "#1f77b4", "IsolationForest":
 
 def run():
     rows = []
-    for ds in ["nsl-kdd", "unsw-nb15"]:
+    for ds in ["nsl-kdd", "unsw-nb15", "n-baiot"]:
         X, y, _ = datasets.load(ds)
         for seed in SEEDS:
             rng = np.random.default_rng(seed)
@@ -62,15 +62,17 @@ def run():
     tab["Dataset"] = tab["Dataset"].map(C.DATASET_TITLE)
     C.write_table(tab, "exp3_baselines",
                   "Standalone semi-supervised novelty detectors trained on 2000 benign samples "
-                  "and evaluated on a 20k-packet stream (mean over 3 seeds). The Mahalanobis "
-                  "Baseline-K-means core is competitive while being among the cheapest to fit/run.",
+                  "and evaluated on a 20k-packet stream (mean over 3 seeds). The Mahalanobis core "
+                  "is efficient and competitive on NSL-KDD; its low recall on UNSW-NB15 exposes "
+                  "the limit of standalone BKM and motivates AF-BKM's adaptive thresholding and "
+                  "robust aggregation.",
                   "tab:baselines")
 
     # bar chart: F1 per detector per dataset
     dets = ["Bkmeans-Mahalanobis", "OCSVM", "IsolationForest", "LOF", "KDE", "KNN"]
     short = {"Bkmeans-Mahalanobis": "Bkmeans\n(Mahal.)", "IsolationForest": "Isolation\nForest"}
-    fig, axes = C.plt.subplots(1, 2, figsize=(15, 5.4))
-    for ax, ds in zip(axes, ["nsl-kdd", "unsw-nb15"]):
+    fig, axes = C.plt.subplots(1, 3, figsize=(21, 5.4))
+    for ax, ds in zip(axes, ["nsl-kdd", "unsw-nb15", "n-baiot"]):
         sub = g[g.dataset == ds].set_index("detector").reindex(dets)
         xpos = np.arange(len(dets)); w = 0.26
         for k, (metric, off) in enumerate([("precision", -w), ("recall", 0), ("f1", w)]):

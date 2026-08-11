@@ -1,10 +1,11 @@
 """Federated simulation harness + aggregation modes.
 
-Two aggregation modes let us reproduce the published failure mode and the fix:
-  * mode="original": faithful re-implementation of the Sensors coordinator merge
-    (equal-mean averaging + threshold = percentile of benign distances filtered to
-    those below the *minimum* worker-anomalous distance). This min-outline filtering
-    makes the threshold ever more conservative across merges -> precision decays.
+Two aggregation modes compare the published coordinator rule and the fix in the
+same windowed simulation protocol:
+  * mode="original": protocol-level reimplementation of the Sensors coordinator
+    equations (equal-mean averaging + a percentile of benign distances filtered
+    below the minimum worker-anomalous distance). Repeated min-outline filtering
+    produces the precision-decay failure measured by the experiments.
   * mode="robust" (E2): count/quality-weighted worker mean blended with a trusted
     benign anchor; the threshold is RE-CALIBRATED on the trusted benign anchor (E1 rule),
     NOT taken as a worker consensus. Per-worker threshold candidates are used only for
@@ -81,7 +82,7 @@ def _aggregate(model, coord, updates, *, mode, threshold_strategy, threshold_kwa
         return model  # nothing to merge (all-empty); leave model unchanged (NaN guard)
 
     if mode == "original":
-        # equal-mean averaging of coordinator + workers (as in bkmeans.merge)
+        # Equal-mean coordinator rule evaluated on this simulation window.
         means = [coord["mean"]] + [u["benign_mean"] for u in valid]
         new_mean = np.mean(np.stack(means, axis=0), axis=0)
         inv = model.inv_cov  # coordinator covariance, never updated by workers
@@ -114,7 +115,7 @@ def _aggregate(model, coord, updates, *, mode, threshold_strategy, threshold_kwa
             w = w / (1.0 + disp)
         w = w / w.sum()
         worker_mean = np.tensordot(w, np.stack([u["benign_mean"] for u in keep], axis=0), axes=(0, 0))
-        # conservative blend toward the TRUSTED anchor baseline (bounds mean drift)
+        # Blend the accepted worker mean with the fixed commissioning anchor.
         new_mean = (1.0 - blend) * coord["anchor_mean"] + blend * worker_mean
         inv = model.inv_cov  # statistics-only: covariance is never transmitted
         # benign-anchored threshold: recalibrate on the TRUSTED benign baseline to a
@@ -134,15 +135,29 @@ def run_simulation(X, y, *, n_workers=3, n_baseline=2000, window=1000,
                    aggregation="original", consensus_mode="median",
                    quality_weight=True, trust_k=3.0, blend=0.5, strata=None,
                    poison_workers=(), poison_kind="evasion", scale_on_baseline=True,
-                   max_epochs=None, label=""):
+                   contaminate_baseline=0.0, max_epochs=None, label=""):
     """Run one federated streaming simulation; return a per-epoch per-worker DataFrame."""
+    if not 0.0 <= contaminate_baseline <= 1.0:
+        raise ValueError("contaminate_baseline must be between 0 and 1")
     rng = np.random.default_rng(seed)
     X = np.asarray(X, dtype=float); y = np.asarray(y, dtype=int)
     perm = rng.permutation(len(X)); X, y = X[perm], y[perm]
     s = (y if strata is None else np.asarray(strata)[perm])
 
     benign_idx = np.where(y == 0)[0]
-    base_sel = benign_idx[:n_baseline]
+    if contaminate_baseline > 0.0:
+        # Replace a fraction of the commissioning anchor with seeded attack rows.
+        # The p=0 branch remains bit-identical to the uncontaminated protocol.
+        attack_idx = np.where(y == 1)[0]
+        n_attack = int(round(contaminate_baseline * n_baseline))
+        n_benign = n_baseline - n_attack
+        if n_benign > len(benign_idx) or n_attack > len(attack_idx):
+            raise ValueError("not enough benign/attack rows for the requested contaminated anchor")
+        base_sel = np.concatenate([benign_idx[:n_benign], attack_idx[:n_attack]])
+    else:
+        if n_baseline > len(benign_idx):
+            raise ValueError("not enough benign rows for the requested baseline")
+        base_sel = benign_idx[:n_baseline]
     Xb = X[base_sel]
     mask = np.ones(len(X), dtype=bool); mask[base_sel] = False
     Xs, ys, ss = X[mask], y[mask], s[mask]

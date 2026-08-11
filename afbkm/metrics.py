@@ -45,12 +45,15 @@ def precision_drop_per_merge(precision_series) -> float:
 
 
 def comms_floats_per_round(d: int, share_cov: bool = False) -> int:
-    """Floats a worker uploads per merge round.
+    """Count the AF-BKM per-worker fp32 payload for one merge round.
 
-    statistics-only: benign mean (d) + anomalous mean (d) + threshold/dispersion/
-    count scalars (~3). Sharing the covariance adds the upper triangle d*(d+1)/2.
+    AF-BKM uploads a benign mean (d values), benign count, dispersion, and local
+    threshold candidate (three scalars). ``share_cov`` adds the covariance upper
+    triangle to this same payload for the communication-cost comparison.
     """
-    base = 2 * d + 3
+    if d <= 0:
+        raise ValueError("d must be positive")
+    base = d + 3
     if share_cov:
         base += d * (d + 1) // 2
     return int(base)

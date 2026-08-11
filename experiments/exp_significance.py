@@ -37,8 +37,8 @@ def run():
     # metric, higher-is-better orientation for the difference AF-BKM vs Baseline
     specs = [("final_precision", "Final precision", +1),
              ("mean_fpr", "Mean FPR", -1),                 # improvement = reduction
-             ("delta_precision", "Precision decay $\\Delta$P", +1)]
-    for ds in ["nsl-kdd", "unsw-nb15"]:
+             ("delta_precision", f"Precision decay {C.DELTA}P", +1)]
+    for ds in ["nsl-kdd", "unsw-nb15", "n-baiot"]:
         b = _per_seed(raw, ds, BASE)
         a = _per_seed(raw, ds, AFBKM)
         seeds = sorted(b["final_precision"])
@@ -54,8 +54,8 @@ def run():
             dz = float(diff.mean() / (diff.std(ddof=1) + 1e-12))
             rows.append({
                 "Dataset": C.DATASET_TITLE[ds], "Metric": label,
-                "Baseline": f"{bv.mean():.3f} ± {bv.std():.3f}",
-                "AF-BKM": f"{av.mean():.3f} ± {av.std():.3f}",
+                "Baseline": f"{bv.mean():.3f} {C.PM} {bv.std():.3f}",
+                "AF-BKM": f"{av.mean():.3f} {C.PM} {av.std():.3f}",
                 "Improvement [95% CI]": f"{diff.mean():+.3f} [{lo:+.3f}, {hi:+.3f}]",
                 "Wilcoxon p": f"{p:.4f}", "Cohen dz": f"{dz:+.2f}",
             })

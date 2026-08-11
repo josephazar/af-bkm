@@ -1,6 +1,6 @@
-"""Smoke test: does the original merge decay precision, and does E1+E2 fix it?"""
+"""Fast integration check for the central simulation path."""
 import numpy as np
-from afbkm import datasets, federated as F
+from afbkm import datasets, federated as F, metrics as M
 
 X, y, names = datasets.load("nsl-kdd")
 print(f"NSL-KDD: X={X.shape} attack_ratio={(y==1).mean():.3f}")
@@ -31,3 +31,10 @@ print(f"\nfinal precision : base={gb.P.iloc[-1]:.3f}  E1E2={gr.P.iloc[-1]:.3f}")
 print(f"mean  precision : base={gb.P.mean():.3f}  E1E2={gr.P.mean():.3f}")
 print(f"mean  recall    : base={gb.R.mean():.3f}  E1E2={gr.R.mean():.3f}")
 print(f"mean  F2        : base={gb.F2.mean():.3f}  E1E2={gr.F2.mean():.3f}")
+
+assert np.isfinite(gb.to_numpy()).all()
+assert np.isfinite(gr.to_numpy()).all()
+assert gr.P.iloc[-1] > gb.P.iloc[-1]
+assert M.comms_floats_per_round(37) == 40
+assert M.comms_floats_per_round(115) == 118
+print("\nsmoke test passed")

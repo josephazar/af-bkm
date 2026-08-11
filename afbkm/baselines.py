@@ -1,6 +1,6 @@
 """Semi-supervised novelty-detection baselines (trained on benign data only).
 
-These mirror the comparators in the original Baseline K-means papers and are
+These mirror the comparators in the published Baseline K-means evaluations and are
 re-implemented with scikit-learn so no heavyweight DL dependency is required.
 Each detector exposes fit(X_benign) / predict(X) -> {0 benign, 1 anomaly}.
 """

@@ -23,7 +23,7 @@ def _final(df):
 
 def run():
     rows = []
-    for ds in ["unsw-nb15", "nsl-kdd"]:
+    for ds in ["unsw-nb15", "nsl-kdd", "n-baiot"]:
         X, y, _ = datasets.load(ds)
         for t in TARGETS:
             acc = {m: [] for m in MET}
@@ -45,7 +45,7 @@ def run():
     # table
     tab = R.copy()
     for m in MET:
-        tab[m] = tab.apply(lambda r: f"{r[m]:.3f} ± {r[m+'_std']:.3f}", axis=1)
+        tab[m] = tab.apply(lambda r: f"{r[m]:.3f} {C.PM} {r[m+'_std']:.3f}", axis=1)
     tab = tab[["dataset", "target_fpr"] + MET]
     tab["dataset"] = tab["dataset"].map(C.DATASET_TITLE)
     tab.columns = ["Dataset", "Target FPR", "Precision", "Recall", "F1", "F2", "Actual FPR"]
@@ -54,8 +54,8 @@ def run():
                   "over 5 seeds). The achieved FPR tracks the target, exposing an explicit "
                   "precision/recall trade-off, most pronounced on UNSW-NB15.", "tab:targetfpr")
 
-    fig, axes = C.plt.subplots(1, 2, figsize=(13, 5))
-    for ax, ds in zip(axes, ["unsw-nb15", "nsl-kdd"]):
+    fig, axes = C.plt.subplots(1, 3, figsize=(16.5, 5))
+    for ax, ds in zip(axes, ["unsw-nb15", "nsl-kdd", "n-baiot"]):
         sub = R[R.dataset == ds].sort_values("target_fpr")
         for m, c in [("precision", "#1f77b4"), ("recall", "#2ca02c"), ("f1", "#ff7f0e")]:
             ax.errorbar(sub.target_fpr, sub[m], yerr=sub[m + "_std"], marker="o", lw=2,

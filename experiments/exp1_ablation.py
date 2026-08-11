@@ -1,4 +1,4 @@
-"""Experiment 1 - ablation {Baseline, E1, E2, E1+E2} x {NSL-KDD, UNSW-NB15} x seeds.
+"""Experiment 1 - ablation {Baseline, E1, E2, E1+E2} across three datasets and seeds.
 
 Produces the headline precision/F1/FPR-vs-merge figures and the ablation table,
 demonstrating that E2 (robust benign-anchored aggregation) removes the
@@ -19,7 +19,7 @@ CONFIGS = {
     "AF-BKM (E1+E2)": dict(aggregation="robust", consensus_mode="median",
                            threshold_strategy="mad", threshold_kwargs={"k": 3.0}),
 }
-DATASETS = ["nsl-kdd", "unsw-nb15"]
+DATASETS = ["nsl-kdd", "unsw-nb15", "n-baiot"]
 SEEDS = list(range(10))
 SIM = dict(n_workers=3, n_baseline=2000, window=1000, merges=(6, 12, 18),
            alpha=0.5, max_epochs=24, blend=0.5, quality_weight=True, trust_k=3.0)
@@ -79,14 +79,14 @@ def run():
                 late = s.precision.tail(3).mean()
                 deltas.append(late - early)
                 finals.append(late)
-            recs["Precision (final)"] = f"{np.mean(finals):.3f} ± {np.std(finals):.3f}"
-            recs["ΔP (early→late)"] = f"{np.mean(deltas):+.3f}"
+            recs["Precision (final)"] = f"{np.mean(finals):.3f} {C.PM} {np.std(finals):.3f}"
+            recs[f"{C.DELTA}P (early{C.ARROW}late)"] = f"{np.mean(deltas):+.3f}"
             for m, lab in [("recall", "Recall"), ("f1", "F1"), ("f2", "F2"), ("fpr", "FPR")]:
-                recs[lab] = f"{sub[m].mean():.3f} ± {sub.groupby('seed')[m].mean().std():.3f}"
+                recs[lab] = f"{sub[m].mean():.3f} {C.PM} {sub.groupby('seed')[m].mean().std():.3f}"
             summary.append(recs)
     tab = pd.DataFrame(summary)
     C.write_table(tab, "exp1_ablation_summary",
-                  f"Ablation over the two robustness mechanisms on NSL-KDD and UNSW-NB15 "
+                  f"Ablation over the two mechanisms on NSL-KDD, UNSW-NB15 and N-BaIoT "
                   f"(3 workers, 3 merges, mean$\\pm$std over {len(SEEDS)} seeds). $\\Delta$P is the change in "
                   "precision from the first to the last three epochs; negative indicates "
                   "merge-induced decay.", "tab:ablation")

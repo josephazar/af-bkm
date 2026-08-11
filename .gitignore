@@ -14,7 +14,14 @@ Thumbs.db
 paper/
 taxonomy/
 results/
+/*reviews*/
+
+# Submission packages and generated document artefacts (never part of the code release)
+/*__*/
+*.zip
+__MACOSX/
 *.tex
+*.pdf
 *.aux
 *.log
 *.out
@@ -25,6 +32,6 @@ results/
 *.blg
 *.toc
 
-# Datasets (large / externally sourced; fetched or regenerated)
+# Datasets (large / externally sourced; staged locally and regenerated)
 data/raw/
 data/processed/

@@ -26,7 +26,7 @@ def _final_prec(df):
 
 def run():
     rows = []
-    for ds in ["nsl-kdd", "unsw-nb15"]:
+    for ds in ["nsl-kdd", "unsw-nb15", "n-baiot"]:
         X, y, _ = datasets.load(ds)
         for a in ALPHAS:
             for name, cfg in CFG.items():
@@ -48,8 +48,8 @@ def run():
     R = pd.DataFrame(rows)
     R.to_csv(f"{C.TAB}/exp2_sweeps.csv", index=False)
 
-    fig, axes = C.plt.subplots(2, 2, figsize=(12, 8.5))
-    for i, ds in enumerate(["nsl-kdd", "unsw-nb15"]):
+    fig, axes = C.plt.subplots(3, 2, figsize=(12, 12.5))
+    for i, ds in enumerate(["nsl-kdd", "unsw-nb15", "n-baiot"]):
         for j, (sweep, xlab) in enumerate([("alpha", "Dirichlet $\\alpha$ (smaller = more non-IID)"),
                                            ("workers", "number of workers")]):
             ax = axes[i, j]
@@ -61,7 +61,7 @@ def run():
             if sweep == "alpha":
                 ax.set_xscale("log")
             ax.set_xlabel(xlab); ax.set_ylabel("final precision (last 3 epochs)")
-            ax.set_title(f"{C.DATASET_TITLE[ds]} — vs {sweep}")
+            ax.set_title(f"{C.DATASET_TITLE[ds]} - vs {sweep}")
             ax.legend()
     fig.suptitle("AF-BKM keeps precision high and stable across non-IID severity and worker counts",
                  y=1.01)

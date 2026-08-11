@@ -23,7 +23,7 @@ def regularized_inverse(cov: np.ndarray, reg: float = 1e-3, method: str = "ridge
             return np.linalg.inv(A)
         except np.linalg.LinAlgError:
             return np.linalg.pinv(A)
-    if method == "diagonal":         # MCU-cheap: ignore off-diagonal covariance
+    if method == "diagonal":         # resource-cheap: ignore off-diagonal covariance
         return np.diag(1.0 / (np.diag(cov) + reg))
     raise ValueError(f"unknown cov inverse method {method!r}")
 

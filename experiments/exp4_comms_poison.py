@@ -20,6 +20,7 @@ SCENARIOS = [
     ("Evasion 1/3", "evasion", (0,), 3),
     ("Mean-shift 1/3", "mean_shift", (0,), 3),
     ("Thr-inflate 1/3", "thr_high", (0,), 3),
+    ("Thr-deflate 1/3", "thr_low", (0,), 3),
     ("Evasion 2/5", "evasion", (0, 1), 5),
 ]
 
@@ -31,7 +32,7 @@ def _final(df, col):
 def run():
     # ---------- (a) communication cost ----------
     rows = []
-    for ds, d in [("nsl-kdd", 37), ("unsw-nb15", 39)]:
+    for ds, d in [("nsl-kdd", 37), ("unsw-nb15", 39), ("n-baiot", 115)]:
         so = M.comms_floats_per_round(d, share_cov=False)
         cv = M.comms_floats_per_round(d, share_cov=True)
         rows.append({"Dataset": C.DATASET_TITLE[ds], "d": d,
@@ -40,8 +41,9 @@ def run():
                      "Stats (B/round)": so * 4, "Cov (B/round)": cv * 4})
     comms = pd.DataFrame(rows)
     C.write_table(comms, "exp4_comms",
-                  "Per-worker uplink per merge round (fp32). AF-BKM transmits only means and a "
-                  "few scalars; sharing the covariance grows quadratically in $d$.", "tab:comms")
+                  "Per-worker uplink per merge round (fp32). AF-BKM transmits one benign mean, "
+                  "a benign count, a dispersion value, and a threshold candidate ($d+3$ "
+                  "values); sharing the covariance adds $d(d+1)/2$ values.", "tab:comms")
     print(comms.to_string(index=False))
 
     # ---------- (b) poisoning sensitivity (NSL-KDD) ----------
@@ -71,9 +73,10 @@ def run():
     tab["AF-BKM P"] = [f"{piv['precision']['AF-BKM'][s]:.3f}" for s in order]
     tab["AF-BKM R"] = [f"{piv['recall']['AF-BKM'][s]:.3f}" for s in order]
     C.write_table(tab, "exp4_poison",
-                  "Honest-worker precision (P) and recall (R) under poisoning (mean over 5 seeds). "
-                  "AF-BKM is markedly less sensitive than the original merge to threshold-inflation "
-                  "attacks (evasion, thr-inflate); mean-shift degrades it gracefully but not fully.",
+                  "Honest-worker precision (P) and recall (R) under selected faulty-worker updates "
+                  "(mean over 5 seeds). Fabricated threshold candidates (inflation and deflation) "
+                  "do not directly set AF-BKM's threshold; mean-shift, which targets the blended "
+                  "centroid, is mitigated but not neutralized.",
                   "tab:poison")
 
     # figure: recall by scenario, two defenses
@@ -88,7 +91,7 @@ def run():
         ax.set_xticks(xpos); ax.set_xticklabels(order, rotation=15, fontsize=11)
         ax.set_ylabel(f"honest-worker {lab.lower()}"); ax.set_ylim(0, 1)
         ax.set_title(lab); ax.legend()
-    fig.suptitle("Sensitivity to poisoning attacks (NSL-KDD): AF-BKM vs. original merge", y=1.02)
+    fig.suptitle("Selected faulty-worker updates (NSL-KDD): AF-BKM vs. original merge", y=1.02)
     C.savefig(fig, "exp4_poison")
     print(tab.to_string(index=False))
 

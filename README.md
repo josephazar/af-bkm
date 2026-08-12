@@ -105,8 +105,10 @@ export PYTHONPATH="$PWD:$PWD/experiments"
 ./.venv/bin/python -m afbkm.datasets
 ```
 
-Published experiments cache unscaled arrays and fit baseline-only MinMax scaling
-at runtime, on the commissioning baseline, applying it to future stream samples.
+Published experiments cache unscaled arrays and fit MinMax scaling at runtime,
+on the commissioning baseline, applying it to future stream samples. The
+near-constant feature filter is the disclosed exception: it is label-blind
+full-corpus preprocessing performed before the seeded experiment splits.
 The optional `scale="global"` appendix path uses a separately named,
 digest-validated scaled cache.
 

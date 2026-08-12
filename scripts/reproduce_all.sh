@@ -9,7 +9,7 @@ ROOT="$PWD"
 ./.venv/bin/pip install -q -r requirements.lock.txt
 export PYTHONPATH="$ROOT:$ROOT/experiments"
 
-# Datasets (no-leakage scaling is applied inside the experiments)
+# Datasets (baseline-only MinMax scaling is applied inside the experiments)
 ./.venv/bin/python - <<'PY'
 from afbkm import datasets
 

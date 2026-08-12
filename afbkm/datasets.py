@@ -9,6 +9,11 @@ Design choices used by the experiments:
   * No preprocessing leakage: MinMax scaling to [0,1] is fit on the benign baseline
     ONLY and applied to the stream (see load(scale=...) and federated.run_simulation).
     A scale="global" (full-pool) option is kept solely for an appendix comparison.
+    One disclosed exception: the near-constant column filter in _select() runs
+    over the pooled corpus before experiment splits. It is label-blind full-corpus
+    preprocessing. A recompute on all benign rows gives the same retained-column
+    mask on the three corpora, but this is not a strictly inductive baseline-only
+    step.
   * Train/Test partitions of each dataset are pooled to form the federated stream;
     experiments do their own seeded shuffling and federated/sliding-window splits.
 Processed arrays are cached to data/processed/<name>.npz (+ <name>.features.json).
@@ -67,7 +72,11 @@ def _select(X: np.ndarray, y: np.ndarray, names: list[str]):
 
     Scaling is deliberately NOT applied here: to avoid train/test leakage it is
     fit on the benign baseline only, later (load(scale=...) or run_simulation).
-    Variance-based column pruning is unsupervised and does not use labels.
+
+    The pruning below is computed over whatever matrix it is handed, which is the
+    pooled corpus in the public experiments. It reads X only and never y, so it is
+    label-blind, but it is disclosed as full-corpus preprocessing rather than as a
+    baseline-only step.
     """
     X = np.array(X, dtype=np.float64, copy=True)  # pandas 3 may return read-only views
     X[~np.isfinite(X)] = 0.0

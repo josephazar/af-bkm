@@ -117,9 +117,13 @@ def _aggregate(model, coord, updates, *, mode, threshold_strategy, threshold_kwa
         worker_mean = np.tensordot(w, np.stack([u["benign_mean"] for u in keep], axis=0), axes=(0, 0))
         # Blend the accepted worker mean with the fixed commissioning anchor.
         new_mean = (1.0 - blend) * coord["anchor_mean"] + blend * worker_mean
-        inv = model.inv_cov  # statistics-only: covariance is never transmitted
-        # benign-anchored threshold: recalibrate on the TRUSTED benign baseline to a
-        # fixed target FPR (E1 rule), replacing min-outline tightening -> precision stays put
+        inv = model.inv_cov  # statistics-only: never uploaded, never re-estimated from workers
+        # Benign-anchored threshold: recalibrate on the TRUSTED baseline with the configured
+        # E1 rule (MAD by default; a target FPR only when strategy="calibrated_quantile"),
+        # avoiding the nearest-anomaly tightening used by the original merge.
+        # NOTE: the anchor POINTS are clean, but they are scored under the blended mean, so a
+        # misreported worker mean shifts tau indirectly. Only direct candidate-to-threshold
+        # assignment is removed; candidates still influence trust-gate inclusion.
         base_dist = core.mahalanobis(coord["Xb"], new_mean, inv)
         new_tau = T.compute_threshold(base_dist, strategy=threshold_strategy, **(threshold_kwargs or {}))
         coord["mean"] = new_mean

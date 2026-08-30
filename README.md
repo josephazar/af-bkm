@@ -13,6 +13,9 @@ extends the Baseline K-Means Mahalanobis detector with:
 "Label-free" refers to attack labels during operation. As in other one-class
 detectors, AF-BKM assumes a small nominally benign commissioning set.
 
+The method is described in [*IoT* **2026**, 7(3), 67](https://doi.org/10.3390/iot7030067)
+(open access, CC BY 4.0). See [Citation](#citation).
+
 ## Main result
 
 The central non-IID ablation uses 10 seeds, three workers, and three merge rounds.
@@ -156,6 +159,33 @@ The faulty-worker experiments evaluate the explicit update manipulations in
 The resource experiment is a desktop benchmark. Physical edge-device latency,
 energy, live-network behavior, privacy leakage, and broader adaptive attacks are
 outside this code release's empirical claims.
+
+## Citation
+
+If this code is useful in your work, please cite the paper:
+
+> Al Saleh, M.; Azar, J. Adaptive Federated Baseline K-Means for Lightweight IoT
+> Intrusion Detection: Auto-Thresholding and Robust Statistics Aggregation.
+> *IoT* **2026**, *7*(3), 67. https://doi.org/10.3390/iot7030067
+
+```bibtex
+@Article{iot7030067,
+AUTHOR = {Al Saleh, Mohammed and Azar, Joseph},
+TITLE = {Adaptive Federated Baseline K-Means for Lightweight IoT Intrusion Detection: Auto-Thresholding and Robust Statistics Aggregation},
+JOURNAL = {IoT},
+VOLUME = {7},
+YEAR = {2026},
+NUMBER = {3},
+ARTICLE-NUMBER = {67},
+URL = {https://www.mdpi.com/2624-831X/7/3/67},
+ISSN = {2624-831X},
+DOI = {10.3390/iot7030067}
+}
+```
+
+The article is open access under a Creative Commons Attribution (CC BY 4.0)
+licence. The code in this repository is released separately under the MIT
+licence; see below.
 
 ## License
 
